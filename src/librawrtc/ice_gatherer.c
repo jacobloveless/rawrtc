@@ -9,7 +9,7 @@
 #include "candidate_helper.h"
 
 #define DEBUG_MODULE "ice-gatherer"
-//#define RAWRTC_DEBUG_MODULE_LEVEL 7 // Note: Uncomment this to debug this module only
+#define RAWRTC_DEBUG_MODULE_LEVEL 7 // Note: Uncomment this to debug this module only
 #define RAWRTC_DEBUG_ICE_GATHERER 0 // TODO: Remove
 #include "debug.h"
 
@@ -60,7 +60,12 @@ static void rawrtc_ice_server_url_destroy(
     struct rawrtc_ice_server_url* const url = arg;
 
     // Dereference
+    mem_deref(url->name);
+    mem_deref(url->context);
     mem_deref(url->url);
+
+    // Remove from list
+    list_unlink(&url->le);
 }
 
 /*
@@ -244,6 +249,7 @@ static void rawrtc_ice_gatherer_destroy(
     rawrtc_ice_gatherer_close(gatherer);
 
     // Dereference
+    mem_deref(gatherer->dns_client);
     mem_deref(gatherer->stun);
     mem_deref(gatherer->ice);
     list_flush(&gatherer->buffered_messages);
@@ -262,7 +268,10 @@ enum rawrtc_code rawrtc_ice_gatherer_create(
         void* const arg // nullable
 ) {
     struct rawrtc_ice_gatherer* gatherer;
-    enum rawrtc_code error;
+    int err;
+    struct sa dns_servers[RAWRTC_ICE_GATHERER_DNS_SERVERS];
+    uint32_t n_dns_servers = ARRAY_SIZE(dns_servers);
+    uint32_t i;
 
     // Check arguments
     if (!gathererp || !options) {
@@ -295,10 +304,11 @@ enum rawrtc_code rawrtc_ice_gatherer_create(
     gatherer->ice_config.trace = RAWRTC_DEBUG_ICE_GATHERER ? true : false;
     gatherer->ice_config.ansi = true;
     gatherer->ice_config.enable_prflx = false;
-    error = rawrtc_error_to_code(trice_alloc(
+    err = trice_alloc(
             &gatherer->ice, &gatherer->ice_config, ROLE_UNKNOWN,
-            gatherer->ice_username_fragment, gatherer->ice_password));
-    if (error) {
+            gatherer->ice_username_fragment, gatherer->ice_password);
+    if (err) {
+        DEBUG_WARNING("Unable to create trickle ICE instance, reason: %m\n", err);
         goto out;
     }
 
@@ -309,20 +319,42 @@ enum rawrtc_code rawrtc_ice_gatherer_create(
     gatherer->stun_config.rm = STUN_DEFAULT_RM;
     gatherer->stun_config.ti = STUN_DEFAULT_TI;
     gatherer->stun_config.tos = 0x00;
-    error = rawrtc_error_to_code(stun_alloc(
-            &gatherer->stun, &gatherer->stun_config, stun_indication_handler, NULL));
-    if (error) {
+    err = stun_alloc(&gatherer->stun, &gatherer->stun_config, stun_indication_handler, NULL);
+    if (err) {
+        DEBUG_WARNING("Unable to create STUN instance, reason: %m\n", err);
+        goto out;
+    }
+
+    // Get local DNS servers
+    err = dns_srv_get(NULL, 0, dns_servers, &n_dns_servers);
+    if (err) {
+        DEBUG_WARNING("Unable to retrieve local DNS servers, reason: %m\n", err);
+        goto out;
+    }
+
+    // Print local DNS servers
+    if (n_dns_servers == 0) {
+        DEBUG_NOTICE("No DNS servers found\n");
+    }
+    for (i = 0; i < n_dns_servers; ++i) {
+        DEBUG_PRINTF("DNS server: %j\n", &dns_servers[i]);
+    }
+
+    // Create DNS client (for resolving ICE server IPs)
+    err = dnsc_alloc(&gatherer->dns_client, NULL, dns_servers, n_dns_servers);
+    if (err) {
+        DEBUG_WARNING("Unable to create DNS client instance, reason: %m\n", err);
         goto out;
     }
 
 out:
-    if (error) {
+    if (err) {
         mem_deref(gatherer);
     } else {
         // Set pointer
         *gathererp = gatherer;
     }
-    return error;
+    return rawrtc_error_to_code(err);
 }
 
 /*
@@ -720,12 +752,92 @@ out:
 }
 
 /*
+ * DNS A/AAAA record handler.
+ */
+static void dns_record_result_handler(
+
+) {
+
+}
+
+/*
+ * DNS query result handler.
+ */
+static void dns_query_handler(
+        int err,
+        struct dnshdr const* header,
+        struct list* answer_records,
+        struct list* authoritive_records,
+        struct list* additional_records,
+        void* arg
+) {
+    struct rawrtc_ice_server_url* const url = arg;
+    (void) header; (void) authoritive_records; (void) additional_records;
+
+    // Handle A/AAAA record
+    dns_rrlist_apply2(answer_records, NULL, DNS_TYPE_A, DNS_TYPE_AAAA, DNS_CLASS_IN, true,
+                      dns_record_result_handler, url);
+
+
+}
+
+/*
+ * Resolve ICE server IP addresses.
+ */
+static enum rawrtc_code resolve_ice_servers_address(
+        struct rawrtc_ice_gatherer* const gatherer, // not checked
+        struct rawrtc_ice_gather_options* const options // not checked
+) {
+    struct le* le;
+
+    for (le = list_head(&options->ice_servers); le != NULL; le = le->next) {
+        struct rawrtc_ice_server* const ice_server = le->data;
+        struct le* url_le;
+        int err;
+
+        for (url_le = list_head(&ice_server->urls); url_le != NULL; url_le = url_le->next) {
+            struct rawrtc_ice_server_url* const url = url_le->data;
+
+            // Create context
+            // TODO: Continue here
+
+            // Query A record (if IPv4 is enabled)
+            if (rawrtc_default_config.ipv4_enable) {
+                err = dnsc_query(
+                        &url->dns_a_query, gatherer->dns_client, url->name, DNS_TYPE_A,
+                        DNS_CLASS_IN, true, dns_query_handler, url);
+                if (err) {
+                    DEBUG_WARNING("Unable to create DNS A query, reason: %m\n", err);
+                    // Continue - not considered critical
+                }
+            }
+
+            // Query AAAA record (if IPv6 is enabled)
+            if (rawrtc_default_config.ipv6_enable) {
+                err = dnsc_query(
+                        &url->dns_a_query, gatherer->dns_client, url->name, DNS_TYPE_AAAA,
+                        DNS_CLASS_IN, true, dns_query_handler, url);
+                if (err) {
+                    DEBUG_WARNING("Unable to create DNS AAAA query, reason: %m\n", err);
+                    // Continue - not considered critical
+                }
+            }
+        }
+    }
+
+    // Done
+    return RAWRTC_CODE_SUCCESS;
+};
+
+/*
  * Start gathering using an ICE gatherer.
  */
 enum rawrtc_code rawrtc_ice_gatherer_gather(
         struct rawrtc_ice_gatherer* const gatherer,
         struct rawrtc_ice_gather_options* options // referenced, nullable
 ) {
+    enum rawrtc_code error;
+
     // Check arguments
     if (!gatherer) {
         return RAWRTC_CODE_INVALID_ARGUMENT;
@@ -742,6 +854,12 @@ enum rawrtc_code rawrtc_ice_gatherer_gather(
     // Already gathering?
     if (gatherer->state == RAWRTC_ICE_GATHERER_GATHERING) {
         return RAWRTC_CODE_SUCCESS;
+    }
+
+    // Resolve ICE server IP addresses
+    error = resolve_ice_servers_address(gatherer, options);
+    if (error) {
+        return error;
     }
 
     // Update state

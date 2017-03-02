@@ -264,9 +264,30 @@ enum rawrtc_data_transport_type {
 };
 
 /*
+ * ICE server type.
+ * TODO: private -> ice_gatherer.h
+ */
+enum rawrtc_ice_server_type {
+    RAWRTC_ICE_SERVER_TYPE_STUN,
+    RAWRTC_ICE_SERVER_TYPE_TURN
+};
+
+/*
+ * ICE server transport protocol.
+ * TODO: private -> ice_gatherer.h
+ */
+enum rawrtc_ice_server_protocol {
+    RAWRTC_ICE_SERVER_PROTOCOL_UDP,
+    RAWRTC_ICE_SERVER_PROTOCOL_TCP,
+    RAWRTC_ICE_SERVER_PROTOCOL_TLS
+};
+
+
+/*
  * Struct prototypes.
  * TODO: Remove
  */
+struct rawrtc_ice_server_url_context;
 struct rawrtc_ice_candidate;
 struct rawrtc_data_channel;
 struct rawrtc_dtls_transport;
@@ -514,6 +535,22 @@ struct rawrtc_ice_server {
 struct rawrtc_ice_server_url {
     struct le le;
     char* url;
+    struct rawrtc_ice_server_url_context* context;
+    enum rawrtc_ice_server_type type;
+    char* name;
+    enum rawrtc_ice_server_protocol protocol;
+    struct sa ipv4_address;
+    struct sa ipv6_address;
+};
+
+/*
+ * ICE server URL resolve context.
+ * TODO: private -> ice_gatherer.h
+ */
+struct rawrtc_ice_server_url_context {
+    struct rawrtc_ice_gatherer* gatherer;
+    struct dns_query *dns_a_query;
+    struct dns_query *dns_aaaa_query;
 };
 
 /*
@@ -574,6 +611,7 @@ struct rawrtc_ice_gatherer {
     struct trice_conf ice_config;
     struct stun* stun; // TODO: Do we still need this or should it be in the candidates list?
     struct stun_conf stun_config; // TODO: See above
+    struct dnsc* dns_client;
 };
 
 /*
