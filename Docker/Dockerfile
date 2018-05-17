@@ -1,5 +1,5 @@
 # starting from a base image of Ubuntu
-FROM ubuntu:latest
+FROM ubuntu:16.04
 
 # **** Base System Initialization and Setup  ****
 
