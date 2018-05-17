@@ -53,16 +53,4 @@ root@9bf90c7aba3e:/rawrtc# data-channel-sctp 1 9999
 [000001872] helper-handler: (A) SCTP transport state change: closed
 [000001872] helper-handler: (A) DTLS transport state change: closed
 [000001872] helper-handler: (A) ICE gatherer state: closed
-root@9bf90c7aba3e:/rawrtc# ls -l
-total 40
--rw-r--r-- 1 root root 1760 Mar  3 15:41 CMakeLists.txt
--rw-r--r-- 1 root root 1318 Mar  3 15:41 LICENSE
--rw-r--r-- 1 root root 1849 Mar  3 15:41 Readme.md
-drwxr-xr-x 6 root root 4096 Mar  3 15:41 build
-drwxr-xr-x 2 root root 4096 Mar  3 15:41 htdocs
--rwxr-xr-x 1 root root 7644 Mar  3 15:41 make-dependencies.sh
-drwxr-xr-x 2 root root 4096 Mar  3 15:41 media
--rw-r--r-- 1 root root 1041 Mar  3 15:41 meson.build
-drwxr-xr-x 5 root root 4096 Mar  3 15:41 src
-root@9bf90c7aba3e:/rawrtc#
 ```
