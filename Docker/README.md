@@ -1,11 +1,15 @@
-<img src="https://github.com/rawrtc/rawrtc/blob/master/media/rawrtc-icon-256.png" width="48"> + <img src="https://github.com/docker/docker/blob/master/docs/static_files/docker-logo-compressed.png" width="96"> 
+<img src="https://github.com/rawrtc/rawrtc/blob/master/media/rawrtc-icon-256.pn
+g"width="48"> + <img src="https://github.com/docker/docker/blob/master/docs/sta
+tic_files/docker-logo-compressed.png" width="96"> 
 # RAWRTC Build Environment for Docker 
 
-This folder contains a functioning environment to run the RAWRTC build process inside a new Linux based docker instance.
+This folder contains a functioning environment to run the RAWRTC build process
+inside a new Linux based docker instance.
 
 ## Notes
-Currently the base `Dockerfile` has a functional RAWRTC build process on the latest Ubuntu release.
-Additional Dockerfiles (e.g. Ubuntu 14.04 and earlier) can be used by simply changing the base image in Line 1 of the file 
+Currently the base `Dockerfile` has a functional RAWRTC build process on the
+latest Ubuntu release. Additional Dockerfiles (e.g. Ubuntu 14.04 and earlier)
+can be used by simply changing the base image in Line 1 of the file 
 ```
 FROM ubuntu:latest
 ```
@@ -14,16 +18,19 @@ To something like
 ```
 FROM ubuntu:14.04
 ```
-This is especially useful for generating static binaries where you need to ensure compatibility with older Glibc installations.
+This is especially useful for generating static binaries where you need to
+ensure compatibility with older Glibc installations.
 ***
 
 ## Docker Example
 
-The first step is to [install docker link] https://docs.docker.com/engine/installation/linux/ubuntu/
+The first step is to [install docker](https://docs.docker.com/engine/
+installation/linux/ubuntu/)
 
 Once Docker is installed and available, running the base is simple:
 
-``` bash
+```
+bash
 git clone -b dev_docker https://github.com/jacobloveless/rawrtc
 cd rawrtc/docker
 
