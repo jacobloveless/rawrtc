@@ -11,7 +11,7 @@ FROM ubuntu:latest
 # - libssl for access to build requirements for encryption protocols
 RUN apt-get update \
 	&& apt-get upgrade -y \
-	&& apt-get install -y gcc git cmake pkg-config libssl-dev 
+	&& apt-get install -y build-essential git cmake pkg-config libssl-dev
 
 # Lets set the working directory to root
 WORKDIR /
