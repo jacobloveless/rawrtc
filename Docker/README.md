@@ -49,11 +49,23 @@ docker run -it rawrtc bash
 root@9bf90c7aba3e:/rawrtc# data-channel-sctp 1 9999
 [000000000] data-channel-sctp-app: Init
 [000000029] helper-handler: (A) ICE gatherer state: gathering
-[000000030] (A) ICE gatherer local candidate: foundation=ac110006, protocol=udp, priority=1, ip=172.17.0.6, port=38503, type=host, tcp-type=N/A, related-address=N/A, related-port=0; URL: N/A; enabled
-[000000216] (A) ICE gatherer local candidate: foundation=45a21011, protocol=udp, priority=1, ip=69.162.16.16, port=54571, type=srflx, tcp-type=N/A, related-address=172.17.0.6, related-port=38503; URL: N/A; enabled
+[000000030] (A) ICE gatherer local candidate: foundation=ac110006,
+protocol=udp, priority=1, ip=172.17.0.6, port=38503, type=host, tcp-type=N/A,
+related-address=N/A, related-port=0; URL: N/A; enabled
+[000000216] (A) ICE gatherer local candidate: foundation=45a21011,
+protocol=udp, priority=1, ip=69.162.16.16, port=54571, type=srflx,
+tcp-type=N/A, related-address=172.17.0.6, related-port=38503; URL: N/A; enabled
 [000000216] helper-common: (A) ICE gatherer last local candidate
 [000000217] data-channel-sctp-app: Local Parameters:
-{"iceParameters":{"usernameFragment":"PWTL1Mx4","password":"FPLAZsFjbVBmJgYWnZxdNVDpiAeL3FlZ","iceLite":false},"iceCandidates":[{"foundation":"ac110006","priority":1,"ip":"172.17.0.6","protocol":"udp","port":38503,"type":"host"},{"foundation":"45a21011","priority":1,"ip":"69.162.16.16","protocol":"udp","port":54571,"type":"srflx","relatedAddress":"172.17.0.6","relatedPort":38503}],"dtlsParameters":{"role":"auto","fingerprints":[{"algorithm":"sha-256","value":"DE:D1:98:DE:6C:E8:F6:97:84:E0:8D:14:77:8A:BA:93:73:24:EF:14:38:8C:B8:F5:17:71:A3:C6:D7:AF:00:E4"}]},"sctpParameters":{"maxMessageSize":0,"port":9999}}
+{"iceParameters":{"usernameFragment":"PWTL1Mx4","password":"FPLAZsFjbVBmJgYWnZx
+dNVDpiAeL3FlZ","iceLite":false},"iceCandidates":[{"foundation":"ac110006",
+"priority":1,"ip":"172.17.0.6","protocol":"udp","port":38503,"type":"host"},
+{"foundation":"45a21011","priority":1,"ip":"69.162.16.16","protocol":"udp",
+"port":54571,"type":"srflx","relatedAddress":"172.17.0.6","relatedPort":38503}]
+,"dtlsParameters":{"role":"auto","fingerprints":[{"algorithm":"sha-256",
+"value":"DE:D1:98:DE:6C:E8:F6:97:84:E0:8D:14:77:8A:BA:93:73:24:EF:14:38:8C:B8:
+F5:17:71:A3:C6:D7:AF:00:E4"}]},"sctpParameters":{"maxMessageSize":0,"port":9999
+}}
 [000000217] helper-handler: (A) ICE gatherer state: complete
 ^C[000001871] helper-handler: Got signal: 2, terminating...
 [000001871] helper-handler: (A) Data channel closed: cat-noises
