@@ -2,7 +2,6 @@
 # RAWRTC Build Environment for Docker 
 
 This folder contains a functioning environment to run the RAWRTC build process inside a new Linux based docker instance.
-One of the major advantages of RAWRTC is the removal of non DataChannel functions from the native WebRTC stack, dramatically simplifying the deployment on server based systems. Unlike WebRTC native, RAWRTC does not require media drivers (e.g. Pulse Audio of Fake* Video/Audio drivers) to function. This makes RAWRTC ideal so server side applications which focus on the DataChannel implementation of WebRTC.
 
 ## Notes
 Currently the base `Dockerfile` has a functional RAWRTC build process on the latest Ubuntu release.
