@@ -8,7 +8,7 @@ One of the major advantages of RAWRTC is the removal of non DataChannel function
 Currently the base `Dockerfile` has a functional RAWRTC build process on the latest Ubuntu release.
 Additional Dockerfiles (e.g. Ubuntu 14.04 and earlier) can be used by simply changing the base image in Line 1 of the file 
 ```
-FROM ubuntu;latest
+FROM ubuntu:latest
 ```
 
 To something like
